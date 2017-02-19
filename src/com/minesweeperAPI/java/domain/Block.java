@@ -10,6 +10,7 @@ public class Block {
     Integer row;
     Integer column;
     Integer value;
+    Boolean isMine;
     Boolean flagged;
     Boolean flipped;
 
@@ -53,5 +54,17 @@ public class Block {
 
     public void setFlipped(Boolean flipped) {
         this.flipped = flipped;
+    }
+
+    public Boolean getIsMine() {
+        return isMine;
+    }
+
+    public void setIsMine(Boolean isMine) {
+        this.isMine = isMine;
+    }
+
+    public void setValue(Integer value) {
+        this.value = value;
     }
 }
