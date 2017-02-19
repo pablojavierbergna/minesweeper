@@ -10,20 +10,23 @@ import org.apache.commons.lang3.Validate;
  * Created by Pablo on 18/2/2017.
  */
 public class Game {
+    public static final Integer END_OF_GAME_VICTORY_CODE = 100;
+    public static final Integer END_OF_GAME_DEFEAT_CODE = 101;
 
-    static final Integer DEFAULT_ROWS = 9;
-    static final Integer DEFAULT_COLUMNS = 9;
-    static final Integer DEFAULT_MINES = 10;
+    private static final Integer DEFAULT_ROWS = 9;
+    private static final Integer DEFAULT_COLUMNS = 9;
+    private static final Integer DEFAULT_MINES = 10;
 
-    String uuid;
-    Block[][] blocks;
-    Boolean finished;
-    Date initialized;
+    private String uuid;
+    private Block[][] blocks;
+    private Boolean finished;
+    private Date initialized;
+    private Integer remainingBlocks;
 
     //Configurable
-    Integer rows;
-    Integer columns;
-    Integer mines;
+    private Integer rows;
+    private Integer columns;
+    private Integer mines;
 
     public Game() {
         this(DEFAULT_ROWS, DEFAULT_COLUMNS, DEFAULT_MINES);
@@ -39,10 +42,10 @@ public class Game {
         Validate.isTrue(someColumns != 0, "Game columns cannot be zero nor negative");
         Validate.isTrue(someMines != 0, "Game mines cannot be zero nor negative");
 
-        this.rows = someRows;
-        this.columns = someColumns;
-        this.mines = someMines;
-
+        rows = someRows;
+        columns = someColumns;
+        mines = someMines;
+        remainingBlocks = rows*columns;
         uuid = UUID.randomUUID().toString();
         finished = false;
         initialized = new Date();
@@ -62,7 +65,7 @@ public class Game {
             int randomRow = randomGen.nextInt(this.rows) + 1;
             int randomCol = randomGen.nextInt(this.columns) + 1;
 
-            if (blocks[randomRow][randomCol].getIsMine() == false) {
+            if (!blocks[randomRow][randomCol].getIsMine()) {
                 blocks[randomRow][randomCol].setIsMine(true);
                 minesGenerated++;
             }
@@ -75,6 +78,29 @@ public class Game {
                 blocks[i][j].setValue(surroundingMines);
             }
         }
+    }
+
+    /**
+     * Method to flip a block and tell if a mine was inside or not,
+     * chaining the reaction to flip nearby blocks with no mines surrounding
+     */
+    public int flipBlock(Integer aRow, Integer aColumn) {
+        if (!isValidCoordinate(aRow, aColumn)) {
+            return -1;
+        }
+
+        if (blocks[aRow][aColumn].getIsMine() == true) {
+            return END_OF_GAME_DEFEAT_CODE;
+        } else {
+            blocks[aRow][aColumn].setFlipped(true);
+            flipNeightbours(aRow, aColumn);
+        }
+
+        return isEndOfGame();
+    }
+
+    private void flipNeightbours(Integer aRow, Integer aColumn) {
+        
     }
 
     /**
@@ -94,6 +120,16 @@ public class Game {
         }
     }
 
+    /**
+     * Method to tell the end of the game
+     * @return END_OF_GAME_VICTORY_CODE in case of game ended, else 0
+     */
+    private int isEndOfGame() {
+        if (remainingBlocks == mines) {
+            return END_OF_GAME_VICTORY_CODE;
+        }
+        return 0;
+    }
 
     /**
      * Validates that a coordinate is in bounds
@@ -109,7 +145,10 @@ public class Game {
         }
     }
 
+    //**************************************************************************************************************
+
     //Methods for calculating surrounding mines
+
     private int countSurroundingMines(Block aBlock) {
         int mines = countMinesUpperLeft(aBlock);
         mines += countMinesUp(aBlock);
