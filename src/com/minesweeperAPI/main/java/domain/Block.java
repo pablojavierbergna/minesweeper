@@ -1,4 +1,4 @@
-package com.minesweeperAPI.java.domain;
+package com.minesweeperAPI.main.java.domain;
 
 import java.util.UUID;
 
@@ -6,13 +6,13 @@ import java.util.UUID;
  * Created by Pablo on 18/2/2017.
  */
 public class Block {
-    String id;
-    Integer row;
-    Integer column;
-    Integer value;
-    Boolean isMine;
-    Boolean flagged;
-    Boolean flipped;
+    private String id;
+    private Integer row;
+    private Integer column;
+    private Integer value;
+    private Boolean isMine;
+    private Boolean flagged;
+    private Boolean flipped;
 
     public Block(Integer row, Integer column) {
         

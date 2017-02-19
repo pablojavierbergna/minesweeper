@@ -1,4 +1,4 @@
-package com.minesweeperAPI.java.domain;
+package com.minesweeperAPI.main.java.domain;
 
 import java.util.Date;
 import java.util.Random;
@@ -86,21 +86,64 @@ public class Game {
      */
     public int flipBlock(Integer aRow, Integer aColumn) {
         if (!isValidCoordinate(aRow, aColumn)) {
-            return -1;
+            throw new IllegalArgumentException("Trying to flip a block out of game borders");
         }
 
         if (blocks[aRow][aColumn].getIsMine() == true) {
             return END_OF_GAME_DEFEAT_CODE;
         } else {
             blocks[aRow][aColumn].setFlipped(true);
+            remainingBlocks--;
             flipNeightbours(aRow, aColumn);
         }
 
         return isEndOfGame();
     }
 
+    /**
+     * Method to flip nearby blocks that are not mines
+     * @param aRow
+     * @param aColumn
+     */
     private void flipNeightbours(Integer aRow, Integer aColumn) {
-        
+        if (blocks[aRow][aColumn].getIsMine()) {
+            return;
+        }
+        if (!blocks[aRow][aColumn].getFlipped()) {
+            blocks[aRow][aColumn].setFlipped(true);
+            remainingBlocks--;
+        }
+        if (isValidCoordinate(aRow - 1, aColumn - 1)
+                && countMinesUpperLeft(blocks[aRow][aColumn]) == 0) {
+            flipNeightbours(aRow - 1, aColumn - 1);
+        }
+        if (isValidCoordinate(aRow - 1, aColumn)
+                && countMinesUp(blocks[aRow][aColumn]) == 0) {
+            flipNeightbours(aRow - 1, aColumn);
+        }
+        if (isValidCoordinate(aRow - 1, aColumn + 1)
+                && countMinesUpperRight(blocks[aRow][aColumn]) == 0) {
+            flipNeightbours(aRow - 1, aColumn + 1);
+        }
+        if (isValidCoordinate(aRow, aColumn - 1)
+                && countMinesLeft(blocks[aRow][aColumn]) == 0) {
+            flipNeightbours(aRow, aColumn - 1);
+        }
+        if (isValidCoordinate(aRow, aColumn + 1)
+                && countMinesRight(blocks[aRow][aColumn]) == 0) {
+            flipNeightbours(aRow, aColumn + 1);
+        }
+        if (isValidCoordinate(aRow + 1, aColumn - 1)
+                && countMinesDownLeft(blocks[aRow][aColumn]) == 0) {
+            flipNeightbours(aRow + 1, aColumn - 1);
+        }
+        if (isValidCoordinate(aRow + 1, aColumn)
+                && countMinesDown(blocks[aRow][aColumn]) == 0) {
+            flipNeightbours(aRow + 1, aColumn);
+        }
+        if (countMinesDownRight(blocks[aRow][aColumn]) == 0) {
+            flipNeightbours(aRow + 1, aColumn + 1);
+        }
     }
 
     /**
@@ -142,6 +185,18 @@ public class Game {
             return true;
         } else {
             return false;
+        }
+    }
+
+    /**
+     * Similar to isValidCoordinate method but not returning a value, instead throws an exception.
+     * @param aRow
+     * @param aColumn
+     * @throws BlockOutOfBoundsException
+     */
+    private void ValidateCoordinate(Integer aRow, Integer aColumn) throws BlockOutOfBoundsException {
+        if (aRow < 1 || aRow > this.rows || aColumn < 1 || aColumn > this.columns) {
+            throw new BlockOutOfBoundsException();
         }
     }
 
