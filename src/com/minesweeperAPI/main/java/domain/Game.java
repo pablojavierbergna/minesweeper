@@ -32,7 +32,7 @@ public class Game {
         this(DEFAULT_ROWS, DEFAULT_COLUMNS, DEFAULT_MINES);
     }
 
-    public Game(Integer someRows, Integer someColumns, Integer someMines) {
+    public Game(final Integer someRows, final Integer someColumns, final Integer someMines) {
 
         Validate.notNull(someRows, "Game cannot have null rows");
         Validate.notNull(someColumns, "Game cannot have null columns");
@@ -84,7 +84,7 @@ public class Game {
      * Method to flip a block and tell if a mine was inside or not,
      * chaining the reaction to flip nearby blocks with no mines surrounding
      */
-    public int flipBlock(Integer aRow, Integer aColumn) {
+    public int flipBlock(final Integer aRow, final Integer aColumn) {
         if (!isValidCoordinate(aRow, aColumn)) {
             throw new IllegalArgumentException("Trying to flip a block out of game borders");
         }
@@ -97,7 +97,12 @@ public class Game {
             flipNeightbours(aRow, aColumn);
         }
 
-        return isEndOfGame();
+        Integer ending = isEndOfGame();
+        if (ending != 0) {
+            return ending;
+        } else {
+            return blocks[aRow][aColumn].getValue();
+        }
     }
 
     /**
@@ -105,7 +110,7 @@ public class Game {
      * @param aRow
      * @param aColumn
      */
-    private void flipNeightbours(Integer aRow, Integer aColumn) {
+    private void flipNeightbours(final Integer aRow,final Integer aColumn) {
         if (blocks[aRow][aColumn].getIsMine()) {
             return;
         }
@@ -151,7 +156,7 @@ public class Game {
      * @param aRow
      * @param aColumn
      */
-    public void flagBlock(Integer aRow, Integer aColumn) {
+    public void flagBlock(final Integer aRow, final Integer aColumn) {
         if (!isValidCoordinate(aRow, aColumn)) {
             throw new IllegalArgumentException("Trying to flag a block out of game borders");
         }
@@ -169,6 +174,7 @@ public class Game {
      */
     private int isEndOfGame() {
         if (remainingBlocks == mines) {
+            finished = true;
             return END_OF_GAME_VICTORY_CODE;
         }
         return 0;
@@ -180,7 +186,7 @@ public class Game {
      * @param aColumn
      * @return
      */
-    private Boolean isValidCoordinate(Integer aRow, Integer aColumn) {
+    private Boolean isValidCoordinate(final Integer aRow, final Integer aColumn) {
         if (aRow >= 1 && aRow <= this.rows && aColumn >= 1 && aColumn <= this.columns) {
             return true;
         } else {
@@ -194,7 +200,7 @@ public class Game {
      * @param aColumn
      * @throws BlockOutOfBoundsException
      */
-    private void ValidateCoordinate(Integer aRow, Integer aColumn) throws BlockOutOfBoundsException {
+    private void ValidateCoordinate(final Integer aRow, final Integer aColumn) throws BlockOutOfBoundsException {
         if (aRow < 1 || aRow > this.rows || aColumn < 1 || aColumn > this.columns) {
             throw new BlockOutOfBoundsException();
         }
@@ -204,7 +210,7 @@ public class Game {
 
     //Methods for calculating surrounding mines
 
-    private int countSurroundingMines(Block aBlock) {
+    private int countSurroundingMines(final Block aBlock) {
         int mines = countMinesUpperLeft(aBlock);
         mines += countMinesUp(aBlock);
         mines += countMinesUpperRight(aBlock);
@@ -216,7 +222,7 @@ public class Game {
         return mines;
     }
 
-    private int countMinesLeft(Block aBlock) {
+    private int countMinesLeft(final Block aBlock) {
         if (!isValidCoordinate(aBlock.getRow(), aBlock.getColumn() - 1)) return 0;
         if (blocks[aBlock.getRow()][aBlock.getColumn() - 1].getIsMine() == true) {
             return 1;
@@ -225,7 +231,7 @@ public class Game {
         }
     }
 
-    private int countMinesRight(Block aBlock) {
+    private int countMinesRight(final Block aBlock) {
         if (!isValidCoordinate(aBlock.getRow(), aBlock.getColumn() + 1)) return 0;
         if (blocks[aBlock.getRow()][aBlock.getColumn() + 1].getIsMine() == true) {
             return 1;
@@ -234,7 +240,7 @@ public class Game {
         }
     }
 
-    private int countMinesUp(Block aBlock) {
+    private int countMinesUp(final Block aBlock) {
         if (!isValidCoordinate(aBlock.getRow() - 1, aBlock.getColumn())) return 0;
         if (blocks[aBlock.getRow() - 1][aBlock.getColumn()].getIsMine() == true) {
             return 1;
@@ -243,7 +249,7 @@ public class Game {
         }
     }
 
-    private int countMinesDown(Block aBlock) {
+    private int countMinesDown(final Block aBlock) {
         if (!isValidCoordinate(aBlock.getRow() + 1, aBlock.getColumn())) return 0;
         if (blocks[aBlock.getRow() + 1][aBlock.getColumn()].getIsMine() == true) {
             return 1;
@@ -252,7 +258,7 @@ public class Game {
         }
     }
 
-    private int countMinesUpperLeft(Block aBlock) {
+    private int countMinesUpperLeft(final Block aBlock) {
         if (!isValidCoordinate(aBlock.getRow() - 1, aBlock.getColumn() - 1)) return 0;
         if (blocks[aBlock.getRow() - 1][aBlock.getColumn() - 1].getIsMine() == true) {
             return 1;
@@ -261,7 +267,7 @@ public class Game {
         }
     }
 
-    private int countMinesUpperRight(Block aBlock) {
+    private int countMinesUpperRight(final Block aBlock) {
         if (!isValidCoordinate(aBlock.getRow() - 1, aBlock.getColumn() + 1)) return 0;
         if (blocks[aBlock.getRow() - 1][aBlock.getColumn() + 1].getIsMine() == true) {
             return 1;
@@ -270,7 +276,7 @@ public class Game {
         }
     }
 
-    private int countMinesDownLeft(Block aBlock) {
+    private int countMinesDownLeft(final Block aBlock) {
         if (!isValidCoordinate(aBlock.getRow() + 1, aBlock.getColumn() - 1)) return 0;
         if (blocks[aBlock.getRow() + 1][aBlock.getColumn() - 1].getIsMine() == true) {
             return 1;
@@ -279,12 +285,59 @@ public class Game {
         }
     }
 
-    private int countMinesDownRight(Block aBlock) {
+    private int countMinesDownRight(final Block aBlock) {
         if (!isValidCoordinate(aBlock.getRow() + 1, aBlock.getColumn() + 1)) return 0;
         if (blocks[aBlock.getRow() + 1][aBlock.getColumn() + 1].getIsMine() == true) {
             return 1;
         } else {
             return 0;
         }
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public Block[][] getBlocks() {
+        return blocks;
+    }
+
+    public Boolean getFinished() {
+        return finished;
+    }
+
+    public Date getInitialized() {
+        return initialized;
+    }
+
+    public Integer getRemainingBlocks() {
+        return remainingBlocks;
+    }
+
+    public Integer getRows() {
+        return rows;
+    }
+
+    public Integer getColumns() {
+        return columns;
+    }
+
+    public Integer getMines() {
+        return mines;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Game)) return false;
+
+        Game game = (Game) o;
+
+        return getUuid().equals(game.getUuid());
+    }
+
+    @Override
+    public int hashCode() {
+        return getUuid().hashCode();
     }
 }
