@@ -23,10 +23,18 @@ public class GameController {
     private List<Game> games;
 
     GameController() {
-        games = new ArrayList<Game>();
+        games = new ArrayList<>();
         mapper = new ObjectMapper();
     }
 
+    /**
+     * Method invoked to create a new game, returns the game with its uuid to be used later when playing.
+     * @param rows
+     * @param columns
+     * @param mines
+     * @return a Json representing the new game
+     * @throws JsonProcessingException
+     */
     @RequestMapping(value = "/games", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity createNewGame(@RequestParam(value="rows", defaultValue = "0") String rows,
                                   @RequestParam(value="columns", defaultValue = "0") String columns,
@@ -45,6 +53,16 @@ public class GameController {
         }
     }
 
+    /**
+     * Method invoked to flip a block in a specific game, returns a Json with the current game uuid, the row and column
+     * asked to be flipped, the result as a string (Victory, Defeated or Flipped) and the value representing the number
+     * of mines surrounding that block.
+     * @param gameUuid
+     * @param row
+     * @param column
+     * @return a Json representing the result of the flip action
+     * @throws JsonProcessingException
+     */
     @RequestMapping(value = "/games/{gameUuid}/flip", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity flipBlock(@PathVariable String gameUuid,
                           @RequestParam(value="row") String row,
@@ -62,23 +80,63 @@ public class GameController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        Integer result = game.flipBlock(Integer.parseInt(row), Integer.parseInt(column));
-        FlipBlockResponse response = null;
 
-        if (result == Game.END_OF_GAME_VICTORY_CODE) {
-            response = new FlipBlockResponse(game.getUuid(), "Victory", result,
-                    Integer.parseInt(row), Integer.parseInt(column));
+        try {
+            Integer result = game.flipBlock(Integer.parseInt(row), Integer.parseInt(column));
+            FlipBlockResponse response = null;
+
+            if (result == Game.END_OF_GAME_VICTORY_CODE) {
+                response = new FlipBlockResponse(game.getUuid(), "Victory", result,
+                        Integer.parseInt(row), Integer.parseInt(column));
+            }
+            if (result == Game.END_OF_GAME_DEFEAT_CODE) {
+                response = new FlipBlockResponse(game.getUuid(), "Defeated", result,
+                        Integer.parseInt(row), Integer.parseInt(column));
+            }
+            if (response == null) {
+                response = new FlipBlockResponse(game.getUuid(), "Flipped", result,
+                        Integer.parseInt(row), Integer.parseInt(column));
+            }
+            jsonResponse = mapper.writeValueAsString(response);
+            return ResponseEntity.ok(jsonResponse);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        if (result == Game.END_OF_GAME_DEFEAT_CODE) {
-            response = new FlipBlockResponse(game.getUuid(), "Defeated", result,
-                    Integer.parseInt(row), Integer.parseInt(column));
+    }
+
+    /**
+     * Method used to flag a block, providing the row and column and game uuid.
+     * @param gameUuid
+     * @param row
+     * @param column
+     * @return
+     * @throws JsonProcessingException
+     */
+    @RequestMapping(value = "/games/{gameUuid}/flag", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity flagBlock(@PathVariable String gameUuid,
+                                    @RequestParam(value="row") String row,
+                                    @RequestParam(value="column") String column) throws JsonProcessingException {
+
+        if ("0".equals(row) || "0".equals(column)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        if (response == null) {
-            response = new FlipBlockResponse(game.getUuid(), "Flipped", result,
-                    Integer.parseInt(row), Integer.parseInt(column));
+
+        String jsonResponse;
+        Optional<Game> maybeGame = findGame(gameUuid);
+        Game game;
+        if (maybeGame.isPresent()) {
+            game = maybeGame.get();
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        jsonResponse = mapper.writeValueAsString(response);
-        return ResponseEntity.ok(jsonResponse);
+        try {
+            game.flagBlock(Integer.parseInt(row), Integer.parseInt(column));
+            FlipBlockResponse response = null;
+
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     private Optional<Game> findGame(String gameUuid) {
